@@ -2,16 +2,16 @@ using UnityEngine;
 
 public enum GameState
 {
-    MainMenu = 0,
-    Playing = 1,
-    Paused = 2,
+    Menu,
+    Playing,
+    Paused,
 }
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
-    public GameState CurrentState { get; private set; } = GameState.MainMenu;
+    public GameState CurrentState { get; private set; } = GameState.Menu;
 
     private void Awake()
     {
@@ -31,14 +31,18 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         SceneLoader.Instance.Load(SceneNames.GameScene);
         Debug.Log("Game started");
+        if (InputManager.Instance != null)
+            InputManager.Instance.EnablePlayerInput();
     }
 
     public void GoToMenu()
     {
-        CurrentState = GameState.MainMenu;
+        CurrentState = GameState.Menu;
         Time.timeScale = 1f;
         SceneLoader.Instance.Load(SceneNames.MainMenu);
         Debug.Log("Go to Main Menu");
+        if (InputManager.Instance != null)
+            InputManager.Instance.EnableUIInput();
     }
 
     public void Pause()
