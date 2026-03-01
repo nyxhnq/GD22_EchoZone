@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
     private CharacterController characterController;
     private Vector3 verticalVelocity;
     private bool isGrounded;
-
+    
     /// <summary>
     /// Инициализирует ссылки на CharacterController, PlayerStats и камеру.
     /// Вызывается один раз при создании объекта.
@@ -78,6 +78,7 @@ public class PlayerController : MonoBehaviour
     /// и двигает CharacterController. Также обновляет поворот визуальной
     /// модели так, чтобы персонаж всегда смотрел туда же, куда и камера.
     /// </summary>
+
     private void HandleMovement()
     {
         Vector2 moveInput = InputManager.Instance.MoveInput;
@@ -154,6 +155,7 @@ public class PlayerController : MonoBehaviour
             }
         }
     }
+
 
     /// <summary>
     /// Обрабатывает прыжок: если игрок стоит на земле и кнопка прыжка
