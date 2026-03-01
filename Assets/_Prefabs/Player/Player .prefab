@@ -394,6 +394,7 @@ GameObject:
   - component: {fileID: 4382801147039790181}
   - component: {fileID: 1391039243896502659}
   - component: {fileID: 348150529323356855}
+  - component: {fileID: 5142669297149528407}
   m_Layer: 0
   m_Name: 'Player '
   m_TagString: Player
@@ -502,7 +503,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9160182936271148209}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3b500b92e73cb13429accb3504112b9e, type: 3}
   m_Name: 
@@ -515,9 +516,27 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9160182936271148209}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2f418a529973a4c4aa762085de29f405, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   playerStats: {fileID: 1144004232792284268}
+--- !u!114 &5142669297149528407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9160182936271148209}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9340bbad07e83f42ac13f7bb97482cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  crouchHeight: 1
+  standHeight: 2
+  crouchSpeed: 5
+  cameraTransform: {fileID: 21956020750308250}
+  standingCamY: 0.5
+  crouchingCamY: -0.5
