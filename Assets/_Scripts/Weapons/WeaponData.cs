@@ -12,9 +12,9 @@ public class WeaponData : ScriptableObject
 {
     public enum WeaponType
     {
-        Melee,   // Ближний бой (мечи, топоры)
-        Ranged,  // Дальний бой (луки, арбалеты)
-        Magic    // Магическое оружие (посохи и т.п.)
+        Melee = 0,   // Ближний бой (мечи, топоры)
+        Ranged = 1,  // Дальний бой (луки, арбалеты)
+        Magic = 2,    // Магическое оружие (посохи и т.п.)
     }
 
     [Header("Общее")]
@@ -54,4 +54,8 @@ public class WeaponData : ScriptableObject
     [Header("Снаряды (для дальнего боя)")]
     [Tooltip("Префаб снаряда (для лука/магии). Может быть пустым для ближнего боя.")]
     public GameObject projectilePrefab;
-}
+
+    [Tooltip("Скорость снаряда")]
+    public float projectileSpeed = 20f;
+
+    }

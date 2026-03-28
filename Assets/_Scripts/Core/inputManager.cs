@@ -22,6 +22,9 @@ public class InputManager : MonoBehaviour
     private InputAction pauseAction;
     private InputAction zoomAction;
 
+    private InputAction weaponNextAction;
+    private InputAction weaponPrevAction;
+
     //UI Actions
     private InputAction cancelAction;
 
@@ -41,6 +44,9 @@ public class InputManager : MonoBehaviour
     public System.Action OnInteractPressed;
     public System.Action OnPausePressed;
     public System.Action OnCancelPressed;
+
+    public System.Action OnWeaponNextPressed;
+    public System.Action OnWeaponPrevPressed;
 
     // Singleton pattern implementation. Esli uzhe est instants, unichtozhaem ego.
     private void Awake()
@@ -90,7 +96,10 @@ public class InputManager : MonoBehaviour
         pauseAction = playerActionMap.FindAction("Pause");
         cancelAction = uiActionMap.FindAction("Cancel");
         zoomAction = playerActionMap.FindAction("Zoom");
+        weaponNextAction = playerActionMap.FindAction("Next");
+        weaponPrevAction = playerActionMap.FindAction("Previous");
 
+        cancelAction = uiActionMap.FindAction("Cancel");
 
         if (jumpAction != null)
             jumpAction.performed += OnJumpPerformed;
@@ -102,6 +111,11 @@ public class InputManager : MonoBehaviour
             pauseAction.performed += OnPausePerformed;
         if (cancelAction != null)
             cancelAction.performed += OnCancelPerformed;
+        if (weaponNextAction != null)
+            weaponNextAction.performed += OnWeaponNextPerformed;
+        if (weaponPrevAction != null)
+            weaponPrevAction.performed += OnWeaponPrevPerformed;
+
 
 
         EnablePlayerInput();
@@ -145,6 +159,10 @@ public class InputManager : MonoBehaviour
             pauseAction.performed -= OnPausePerformed;
         if (cancelAction != null)
             cancelAction.performed -= OnCancelPerformed;
+        if (weaponNextAction != null)
+            weaponNextAction.performed -= OnWeaponNextPerformed;
+        if (weaponPrevAction != null)
+            weaponPrevAction.performed -= OnWeaponPrevPerformed;
     }
 
     private void Update()
@@ -188,6 +206,16 @@ public class InputManager : MonoBehaviour
     private void OnCancelPerformed(InputAction.CallbackContext context)
     {
         OnCancelPressed?.Invoke();
+    }
+
+    private void OnWeaponNextPerformed(InputAction.CallbackContext context)
+    {
+        OnWeaponNextPressed?.Invoke();
+    }
+
+    private void OnWeaponPrevPerformed(InputAction.CallbackContext context)
+    {
+        OnWeaponPrevPressed?.Invoke();
     }
 
     public void ResetButtonFlags()
