@@ -1,175 +1,91 @@
 using UnityEngine;
 
-/// <summary>
-/// Player movement controller for 3D third-person.
-/// Reads input from InputManager, moves a CharacterController
-/// relative to the camera and rotates the visual model in a
-/// "strafing" style (character always looks where the camera looks).
-/// </summary>
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("References")]
-    [Tooltip("Player stats component (health, move speed, jump force, etc.).")]
-    [SerializeField] private PlayerStats playerStats;
+    [Header("Movement")]
+    public float walkSpeed = 4f;
+    public float sprintSpeed = 7f;
+    public float crouchSpeed = 2f;
+    public float jumpForce = 5f;
+    public float gravity = -9.81f;
 
-    [Tooltip("Camera transform used as reference for movement (usually main camera or Cinemachine virtual camera).")]
-    [SerializeField] private Transform cameraTransform;
+    [Header("Crouch")]
+    public float crouchHeight = 1.0f;
+    public float standHeight = 2.0f;
+    public float crouchTransitionSpeed = 8f;
 
-    [Tooltip("Root transform of the visual model (rotates to face camera).")]
-    [SerializeField] private Transform visualRoot;
+    [Header("Camera")]
+    public Transform cameraTransform;
+    public float standingCamY = 0.8f;
+    public float crouchingCamY = 0.4f;
 
-    [Header("Movement & Physics")]
-    [Tooltip("Gravity value (negative).")]
-    [SerializeField] private float gravity = -9.81f;
-
-    [Tooltip("Small downward velocity to keep the character grounded.")]
-    [SerializeField] private float groundedGravity = -2f;
-
-    [Tooltip("Speed multiplier when sprinting.")]
-    [SerializeField] private float sprintMultiplier = 1.5f;
-
-    private CharacterController characterController;
-    private Vector3 verticalVelocity;
+    private CharacterController controller;
+    private Vector3 velocity;
     private bool isGrounded;
-    
-    /// <summary>
-    /// Инициализирует ссылки на CharacterController, PlayerStats и камеру.
-    /// Вызывается один раз при создании объекта.
-    /// </summary>
+    private bool isCrouching = false;
+
     private void Awake()
     {
-        characterController = GetComponent<CharacterController>();
-
-        if (playerStats == null)
-        {
-            Debug.LogError("PlayerStats reference is not set on PlayerController. Please assign it in the inspector.", this);
-        }
-        //playerStats = GetComponent<PlayerStats>();
-
-        if (cameraTransform == null && Camera.main != null)
-        {
-            Debug.LogError("Camera Transform reference is not set on PlayerController. Defaulting to main camera.", this);
-        }
-        //cameraTransform = Camera.main.transform;
-        if (InputManager.Instance == null)
-        {
-            Debug.LogError("InputManager instance not found. Please ensure an InputManager exists in the scene.", this);
-        }
+        controller = GetComponent<CharacterController>();
+        if (cameraTransform == null)
+            cameraTransform = Camera.main.transform;
     }
 
-    /// <summary>
-    /// Главный игровой цикл контроллера.
-    /// Каждый кадр обрабатывает движение и прыжок, затем сбрасывает одноразовые флаги ввода в InputManager.
-    /// </summary>
     private void Update()
     {
         HandleMovement();
         HandleJump();
-
-        // В КОНЦЕ кадра сбрасываем "одноразовые" флаги кнопок (нажат в этом кадре).
-        // Это важно для действий типа прыжка/атаки: они должны срабатывать один раз,
-        // пока игровой код не успел их прочитать, а затем флаг нужно обнулить.
-        InputManager.Instance.ResetButtonFlags();
+        HandleCrouch();
+        ApplyGravity();
     }
-
-    /// <summary>
-    /// Считает движение относительно камеры, применяет гравитацию
-    /// и двигает CharacterController. Также обновляет поворот визуальной
-    /// модели так, чтобы персонаж всегда смотрел туда же, куда и камера.
-    /// </summary>
 
     private void HandleMovement()
     {
-        Vector2 moveInput = InputManager.Instance.MoveInput;
-        Vector3 moveDirection = Vector3.zero;
+        isGrounded = controller.isGrounded;
+        float speed = walkSpeed;
 
-        // Movement relative to camera:
-        // W/S — move forward/back along camera forward,
-        // A/D — move left/right along camera right (strafe).
-        // определяем направление движения на основе входных данных и ориентации камеры
-        // при движении направо и налево персонаж будет двигаться страйфовым методом, а не поворачиваться в направлении движения
-        if (moveInput.sqrMagnitude > 0.001f && cameraTransform != null)
+        if (Input.GetKey(KeyCode.LeftShift) && !isCrouching)
+            speed = sprintSpeed;
+        if (isCrouching)
+            speed = crouchSpeed;
+
+        float moveX = Input.GetAxis("Horizontal");
+        float moveZ = Input.GetAxis("Vertical");
+
+        Vector3 move = transform.right * moveX + transform.forward * moveZ;
+        controller.Move(move * speed * Time.deltaTime);
+    }
+
+    private void HandleJump()
+    {
+        if (isGrounded && velocity.y < 0)
+            velocity.y = -2f;
+
+        if (isGrounded && Input.GetKeyDown(KeyCode.Space) && !isCrouching)
+            velocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
+    }
+
+    private void HandleCrouch()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+            isCrouching = !isCrouching;
+
+        float targetHeight = isCrouching ? crouchHeight : standHeight;
+        controller.height = Mathf.Lerp(controller.height, targetHeight, crouchTransitionSpeed * Time.deltaTime);
+
+        float targetCamY = isCrouching ? crouchingCamY : standingCamY;
+        if (cameraTransform != null)
         {
-            Vector3 forward = cameraTransform.forward;
-            forward.y = 0f;
-            forward.Normalize();
-
-            Vector3 right = cameraTransform.right;
-            right.y = 0f;
-            right.Normalize();
-
-            moveDirection = forward * moveInput.y + right * moveInput.x;
-            moveDirection.Normalize();
-        }
-
-        float speed = playerStats.playerData.moveSpeed;
-        float rotationSpeed = playerStats.playerData.rotationSpeed;
-
-        if (playerStats != null && playerStats.playerData != null)
-        {
-            speed = playerStats.playerData.moveSpeed;
-            rotationSpeed = playerStats.playerData.rotationSpeed;
-        }
-
-        if (InputManager.Instance.IsSprintHeld())
-        {
-            speed *= sprintMultiplier;
-        }
-
-        Vector3 horizontalVelocity = moveDirection * speed;
-
-        // Ground check from CharacterController.
-        isGrounded = characterController.isGrounded;
-
-        if (isGrounded && verticalVelocity.y < 0f)
-        {
-            verticalVelocity.y = groundedGravity; // небольшой отрицательный импульс, чтобы персонаж оставался на земле 
-        }
-
-        // Apply gravity over time.
-        verticalVelocity.y += gravity * Time.deltaTime;
-
-        // Final velocity combines horizontal movement and vertical velocity.
-        Vector3 velocity = horizontalVelocity + verticalVelocity; // суммируем горизонтальную скорость (движение) и вертикальную скорость (гравитация/прыжок)
-
-        characterController.Move(velocity * Time.deltaTime);
-
-        // Strafing-style rotation:
-        // visual model always faces camera forward on XZ plane,
-        // movement can be forward/back/strafe relative to camera.
-        if (cameraTransform != null && visualRoot != null)
-        {
-            Vector3 cameraForward = cameraTransform.forward;
-            cameraForward.y = 0f;
-            cameraForward.Normalize();
-
-            if (cameraForward.sqrMagnitude > 0.001f)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(cameraForward);
-                visualRoot.rotation = Quaternion.Slerp(
-                    visualRoot.rotation,
-                    targetRotation,
-                    rotationSpeed * Mathf.Deg2Rad * Time.deltaTime
-                );
-            }
+            Vector3 camPos = cameraTransform.localPosition;
+            camPos.y = Mathf.Lerp(camPos.y, targetCamY, crouchTransitionSpeed * Time.deltaTime);
+            cameraTransform.localPosition = camPos;
         }
     }
 
-
-    /// <summary>
-    /// Обрабатывает прыжок: если игрок стоит на земле и кнопка прыжка
-    /// была нажата в этом кадре, задаёт вертикальную скорость вверх.
-    /// </summary>
-    private void HandleJump()
+    private void ApplyGravity()
     {
-        if (!isGrounded)
-            return;
-
-        if (InputManager.Instance.IsJumpPressed())
-        {
-            float jumpForce = playerStats.playerData.jumpForce;
-            verticalVelocity.y = Mathf.Sqrt(jumpForce * -2f * gravity);
-        }
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
     }
 }
