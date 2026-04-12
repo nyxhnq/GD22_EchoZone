@@ -6,7 +6,7 @@ using UnityEngine;
 /// здоровье, мана/энергия и связанные с ними события.
 /// Хранит ТЕКУЩИЕ значения в рантайме и даёт методы для урона и лечения.
 /// </summary>
-public class PlayerStats : MonoBehaviour
+public class PlayerStats : MonoBehaviour, IDamageable
 {
     [Header("Данные игрока")]
     [Tooltip("ScriptableObject с базовыми параметрами игрока (PlayerData).")]
@@ -20,6 +20,7 @@ public class PlayerStats : MonoBehaviour
     [SerializeField]
     [Tooltip("Текущая мана (или энергия) игрока.")]
     private float currentMana;
+    private bool isDead;
 
     /// <summary>
     /// Текущее здоровье игрока (только для чтения).
@@ -32,6 +33,11 @@ public class PlayerStats : MonoBehaviour
     /// Для изменения используйте метод AddMana().
     /// </summary>
     public float CurrentMana => currentMana;
+
+    /// <summary>
+    /// Признак, что игрок мёртв (для боевой логики и блокировки управления).
+    /// </summary>
+    public bool IsDead => isDead;
 
     // События для связи с другими системами (UI, эффекты и т.п.)
     /// <summary>
@@ -75,40 +81,14 @@ public class PlayerStats : MonoBehaviour
         // Берём стартовые значения и ограничиваем их в разумных пределах.
         currentHealth = Mathf.Clamp(playerData.maxHealth, 1f, float.MaxValue);
         currentMana = Mathf.Clamp(playerData.maxMana, 0f, float.MaxValue);
+        isDead = false;
 
         // Уведомляем подписчиков о начальных значениях.
         OnHealthChanged?.Invoke(currentHealth, playerData.maxHealth);
         OnManaChanged?.Invoke(currentMana, playerData.maxMana);
     }
 
-    /// <summary>
-    /// Применяет бонусы за повышение уровня:
-    /// меняет maxHealth / maxMana и обновляет текущие значения
-    /// с подниманием событий OnHealthChanged / OnManaChanged.
-    /// Вызывать этот метод предпочтительнее, чем напрямую
-    /// менять currentHealth / currentMana и ScriptableObject снаружи.
-    /// </summary>
-    public void ApplyLevelUpBonuses(float healthBonus, float manaBonus)
-    {
-        if (playerData == null)
-       {
-            Debug.LogWarning("PlayerStats.ApplyLevelUpBonuses: PlayerData не назначен.", this);
-            return;
-        }
-
-        // Увеличиваем максимальные значения
-        playerData.maxHealth += healthBonus;
-        playerData.maxMana += manaBonus;
-
-        // Синхронизируем текущее с новыми максимумами
-        currentHealth = playerData.maxHealth;
-        currentMana = Mathf.Clamp(currentMana, 0f, playerData.maxMana);
-
-        // События вызываем здесь, внутри PlayerStats
-        OnHealthChanged?.Invoke(currentHealth, playerData.maxHealth);
-        OnManaChanged?.Invoke(currentMana, playerData.maxMana);
-    }
-
+   
     /// <summary>
     /// Наносит урон игроку.
     /// Не даёт опустить здоровье ниже 0 и при необходимости вызывает OnDeath.
@@ -122,7 +102,7 @@ public class PlayerStats : MonoBehaviour
         }
 
         // Не реагируем на некорректный урон или если игрок уже мёртв.
-        if (amount <= 0f || currentHealth <= 0f)
+        if (amount <= 0f || isDead)
             return;
 
         currentHealth -= amount;
@@ -132,6 +112,8 @@ public class PlayerStats : MonoBehaviour
 
         if (currentHealth <= 0f)
         {
+            isDead = true;
+            Debug.Log($"{name}: игрок умер.");
             // Игрок "умирает" — здесь можно запустить анимацию смерти, перезапуск уровня и т.п.
             OnDeath?.Invoke();
         }
@@ -150,7 +132,7 @@ public class PlayerStats : MonoBehaviour
         }
 
         // Нет смысла лечить на неположительное значение или лечить мёртвого.
-        if (amount <= 0f || currentHealth <= 0f)
+        if (amount <= 0f || isDead)
             return;
 
         currentHealth += amount;

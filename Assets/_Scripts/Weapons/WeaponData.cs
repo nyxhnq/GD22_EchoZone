@@ -14,14 +14,13 @@ public class WeaponData : ScriptableObject
     {
         Melee = 0,   // Ближний бой (мечи, топоры)
         Ranged = 1,  // Дальний бой (луки, арбалеты)
-        Magic = 2,    // Магическое оружие (посохи и т.п.)
     }
 
     [Header("Общее")]
     [Tooltip("Читаемое название оружия (для UI).")]
     public string weaponName = "New Weapon";
 
-    [Tooltip("Тип оружия (ближнее, дальнее, магическое).")]
+    [Tooltip("Тип оружия (ближнее, дальнее).")]
     public WeaponType weaponType = WeaponType.Melee;
 
     [Tooltip("Иконка оружия для инвентаря/интерфейса.")]
@@ -50,12 +49,5 @@ public class WeaponData : ScriptableObject
 
     [Tooltip("Звук атаки (удар/выстрел).")]
     public AudioClip attackSound;
-
-    [Header("Снаряды (для дальнего боя)")]
-    [Tooltip("Префаб снаряда (для лука/магии). Может быть пустым для ближнего боя.")]
-    public GameObject projectilePrefab;
-
-    [Tooltip("Скорость снаряда")]
-    public float projectileSpeed = 20f;
 
     }

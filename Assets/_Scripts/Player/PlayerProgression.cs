@@ -121,14 +121,5 @@ public class PlayerProgression : MonoBehaviour
 
         // Уведомляем подписчиков
         OnLevelUp?.Invoke(currentLevel);
-
-        // Пример: усиливаем характеристики игрока при каждом уровне
-        if (playerStats != null)
-        {
-            // Все изменения здоровья/маны и вызовы событий
-            // делаем через PlayerStats, чтобы события вызывались
-            // только изнутри класса-источника.
-            playerStats.ApplyLevelUpBonuses(10f, 5f);
-        }
     }
 }

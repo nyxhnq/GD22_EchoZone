@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2890982010455361612}
   - component: {fileID: 8344742368289443076}
   - component: {fileID: 7092507592198339834}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Eyes
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -119,7 +119,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2689619719909607581}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: EnemyBaseMeele
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -154,7 +154,7 @@ GameObject:
   - component: {fileID: 1023909814766792699}
   - component: {fileID: 7327887380027877399}
   - component: {fileID: 8355183700864000252}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -264,9 +264,9 @@ GameObject:
   - component: {fileID: 6607524166372890416}
   - component: {fileID: 4113582440727020646}
   - component: {fileID: 3138023230492062550}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: EnemyBaseMeele(gameobject)
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -329,6 +329,10 @@ PrefabInstance:
       propertyPath: enemyData
       value: 
       objectReference: {fileID: 11400000, guid: 969e79cc4b5639e498fc9df4136c5465, type: 2}
+    - target: {fileID: 5245404094029424834, guid: 7828cccf1b7033542bd25e90e41b93d6, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 6099590238039309121, guid: 7828cccf1b7033542bd25e90e41b93d6, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -369,9 +373,17 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7092038382995799513, guid: 7828cccf1b7033542bd25e90e41b93d6, type: 3}
+      propertyPath: m_Layer
+      value: 6
+      objectReference: {fileID: 0}
     - target: {fileID: 8955238265980316339, guid: 7828cccf1b7033542bd25e90e41b93d6, type: 3}
       propertyPath: m_Name
       value: EnemyBaseMeele
+      objectReference: {fileID: 0}
+    - target: {fileID: 8955238265980316339, guid: 7828cccf1b7033542bd25e90e41b93d6, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 5031530292853824343, guid: 7828cccf1b7033542bd25e90e41b93d6, type: 3}

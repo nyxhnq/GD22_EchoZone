@@ -153,10 +153,10 @@ public class WeaponManager : MonoBehaviour
             availableWeapons.Add(w);
     }
 
-    private void SetupWeapon(WeaponBase weapon)
+    [SerializeField] private void SetupWeapon(WeaponBase weapon)
     {
         if (weapon == null) return;
-        weapon.owner = transform;
+        weapon.Owner = transform;
         weapon.transform.localPosition = Vector3.zero;
         weapon.transform.localRotation = Quaternion.identity;
         //TODO:здесь нужно сделать привязку к кости

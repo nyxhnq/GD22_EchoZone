@@ -12,7 +12,7 @@ using UnityEngine;
 /// <summary>
 /// Базовый класс поведения врага для simple-ветки.
 /// </summary>
-public class EnemyBase : MonoBehaviour
+public class EnemyBase : MonoBehaviour, IDamageable
 {
     [Header("Данные врага")]
     [Tooltip("ScriptableObject с базовыми параметрами врага.")]
