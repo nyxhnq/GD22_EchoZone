@@ -6,6 +6,11 @@ TagManager:
   tags:
   - Enemy
   - NPC
+  - Weapon
+  - LevelPart
+  - SecondCamera
+  - BulletSpawn
+  - Dummie
   layers:
   - Default
   - TransparentFX
@@ -14,7 +19,7 @@ TagManager:
   - Water
   - UI
   - Enemy
-  - 
+  - Weapon
   - 
   - 
   - 
