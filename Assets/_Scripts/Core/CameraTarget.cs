@@ -3,7 +3,7 @@ using UnityEngine;
 public class CameraTarget : MonoBehaviour
 {
     [Header("Mouse Settings")]
-    [SerializeField] private float mouseSensitivity = 0.5f;
+    [SerializeField] private float mouseSensitivity = 0.15f; // было 0.5f, уменьшено для более плавного управления
     [SerializeField] private float minVerticalAngle = -30f;
     [SerializeField] private float maxVerticalAngle = 60f;
 
@@ -37,13 +37,7 @@ public class CameraTarget : MonoBehaviour
         transform.localRotation = Quaternion.Euler(currentPitch, currentYaw, 0f);
     }
 
-    //public void SetMouseSensitivity(float sensitivity)
-    //{
-    //    mouseSensitivity = Mathf.Clamp(sensitivity, 0.1f, 10f);
-    //}
-
-    public float GetMouseSensitivity() => mouseSensitivity; // свойство чтобы получить доступ к чувствительности мышииз других классов (например для UI настроек)
-    // чтобы можно было внутри игры в настройках чувствительность, нужно 
+    public float GetMouseSensitivity() => mouseSensitivity;
 
     private static float NormalizeAngle(float angle)
     {

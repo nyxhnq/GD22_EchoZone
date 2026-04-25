@@ -56,7 +56,18 @@ public class PlayerController : MonoBehaviour
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");
 
-        Vector3 move = transform.right * moveX + transform.forward * moveZ;
+        // ƒвижение относительно направлени€ камеры
+        Vector3 forward = cameraTransform.forward;
+        Vector3 right = cameraTransform.right;
+
+        // »гнорируем вертикальную составл€ющую направлени€
+        forward.y = 0f;
+        right.y = 0f;
+
+        forward.Normalize();
+        right.Normalize();
+
+        Vector3 move = (forward * moveZ + right * moveX).normalized;
         controller.Move(move * speed * Time.deltaTime);
     }
 
