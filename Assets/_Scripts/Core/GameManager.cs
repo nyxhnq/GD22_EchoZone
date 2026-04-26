@@ -1,9 +1,9 @@
-/*
+п»ї/*
  * GameManager
- * Назначение: центральный менеджер состояния игры (меню, игра, пауза).
- * Что делает: управляет состоянием GameState, временем (Time.timeScale), загрузкой сцен и переключением ввода.
- * Связи: использует SceneLoader, InputManager, EventBus, SceneNames; Singleton через статическое свойство Instance.
- * Паттерны: Singleton, простая машина состояний (state machine), Facade над SceneLoader и EventBus.
+ * РќР°Р·РЅР°С‡РµРЅРёРµ: С†РµРЅС‚СЂР°Р»СЊРЅС‹Р№ РјРµРЅРµРґР¶РµСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёРіСЂС‹ (РјРµРЅСЋ, РёРіСЂР°, РїР°СѓР·Р°).
+ * Р§С‚Рѕ РґРµР»Р°РµС‚: СѓРїСЂР°РІР»СЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµРј GameState, РІСЂРµРјРµРЅРµРј (Time.timeScale), Р·Р°РіСЂСѓР·РєРѕР№ СЃС†РµРЅ Рё РїРµСЂРµРєР»СЋС‡РµРЅРёРµРј РІРІРѕРґР°.
+ * РЎРІСЏР·Рё: РёСЃРїРѕР»СЊР·СѓРµС‚ SceneLoader, InputManager, EventBus, SceneNames; Singleton С‡РµСЂРµР· СЃС‚Р°С‚РёС‡РµСЃРєРѕРµ СЃРІРѕР№СЃС‚РІРѕ Instance.
+ * РџР°С‚С‚РµСЂРЅС‹: Singleton, РїСЂРѕСЃС‚Р°СЏ РјР°С€РёРЅР° СЃРѕСЃС‚РѕСЏРЅРёР№ (state machine), Facade РЅР°Рґ SceneLoader Рё EventBus.
  */
 
 using UnityEngine;
@@ -13,6 +13,8 @@ public enum GameState
     Menu,
     Playing,
     Paused,
+    Lost,
+    Won,
 }
 
 public class GameManager : MonoBehaviour
@@ -20,12 +22,12 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
 
     /// <summary>
-    /// Текущее состояние игры (меню / игра / пауза).
+    /// РўРµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ РёРіСЂС‹ (РјРµРЅСЋ / РёРіСЂР° / РїР°СѓР·Р°).
     /// </summary>
     public GameState CurrentState { get; private set; } = GameState.Menu;
 
     /// <summary>
-    /// Инициализация Singleton и закрепление объекта между сценами.
+    /// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ Singleton Рё Р·Р°РєСЂРµРїР»РµРЅРёРµ РѕР±СЉРµРєС‚Р° РјРµР¶РґСѓ СЃС†РµРЅР°РјРё.
     /// </summary>
     private void Awake()
     {
@@ -40,20 +42,15 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Запускает игру из меню: переключает состояние, сбрасывает время, загружает игровую сцену и включает ввод игрока.
+    /// Р—Р°РїСѓСЃРєР°РµС‚ РёРіСЂСѓ РёР· РјРµРЅСЋ: РїРµСЂРµРєР»СЋС‡Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ, СЃР±СЂР°СЃС‹РІР°РµС‚ РІСЂРµРјСЏ, Р·Р°РіСЂСѓР¶Р°РµС‚ РёРіСЂРѕРІСѓСЋ СЃС†РµРЅСѓ Рё РІРєР»СЋС‡Р°РµС‚ РІРІРѕРґ РёРіСЂРѕРєР°.
     /// </summary>
     public void StartGame()
     {
-        CurrentState = GameState.Playing;
-        Time.timeScale = 1f;
-        SceneLoader.Instance.LoadWithLoading(SceneNames.GameScene);
-        Debug.Log("Game started");
-        if (InputManager.Instance != null)
-            InputManager.Instance.EnablePlayerInput();
+        RestartGameScene();
     }
 
     /// <summary>
-    /// Возврат в главное меню: переключает состояние, сбрасывает скорость времени, загружает сцену меню и включает UI?ввод.
+    /// Р’РѕР·РІСЂР°С‚ РІ РіР»Р°РІРЅРѕРµ РјРµРЅСЋ: РїРµСЂРµРєР»СЋС‡Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ, СЃР±СЂР°СЃС‹РІР°РµС‚ СЃРєРѕСЂРѕСЃС‚СЊ РІСЂРµРјРµРЅРё, Р·Р°РіСЂСѓР¶Р°РµС‚ СЃС†РµРЅСѓ РјРµРЅСЋ Рё РІРєР»СЋС‡Р°РµС‚ UIвЂ‘РІРІРѕРґ.
     /// </summary>
     public void GoToMenu()
     {
@@ -66,8 +63,8 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Ставит игру на паузу из состояния Playing:
-    /// останавливает время через Time.timeScale и оповещает слушателей через EventBus.
+    /// РЎС‚Р°РІРёС‚ РёРіСЂСѓ РЅР° РїР°СѓР·Сѓ РёР· СЃРѕСЃС‚РѕСЏРЅРёСЏ Playing:
+    /// РѕСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЂРµРјСЏ С‡РµСЂРµР· Time.timeScale Рё РѕРїРѕРІРµС‰Р°РµС‚ СЃР»СѓС€Р°С‚РµР»РµР№ С‡РµСЂРµР· EventBus.
     /// </summary>
     public void Pause()
     {
@@ -75,14 +72,14 @@ public class GameManager : MonoBehaviour
             return;
 
         CurrentState = GameState.Paused;
-        Time.timeScale = 0f; // простой вариант паузы
+        Time.timeScale = 0f; // РїСЂРѕСЃС‚РѕР№ РІР°СЂРёР°РЅС‚ РїР°СѓР·С‹
         EventBus.Instance.RaiseGamePaused();
         Debug.Log("Game paused");
     }
 
     /// <summary>
-    /// Снимает паузу из состояния Paused:
-    /// возвращает Time.timeScale к 1 и оповещает слушателей через EventBus.
+    /// РЎРЅРёРјР°РµС‚ РїР°СѓР·Сѓ РёР· СЃРѕСЃС‚РѕСЏРЅРёСЏ Paused:
+    /// РІРѕР·РІСЂР°С‰Р°РµС‚ Time.timeScale Рє 1 Рё РѕРїРѕРІРµС‰Р°РµС‚ СЃР»СѓС€Р°С‚РµР»РµР№ С‡РµСЂРµР· EventBus.
     /// </summary>
     public void Resume()
     {
@@ -93,5 +90,49 @@ public class GameManager : MonoBehaviour
         Time.timeScale = 1f;
         EventBus.Instance.RaiseGameResumed();
         Debug.Log("Game resumed");
+    }
+
+    /// <summary>
+    /// РџРµСЂРµР·Р°РїСѓСЃРєР°РµС‚ РёРіСЂРѕРІСѓСЋ СЃС†РµРЅСѓ С‡РµСЂРµР· Loading Рё РїРµСЂРµРІРѕРґРёС‚ РёРіСЂСѓ РІ СЃРѕСЃС‚РѕСЏРЅРёРµ Playing.
+    /// РСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РґР»СЏ "New Game" Рё "Restart" СЃ lose-СЌРєСЂР°РЅР°.
+    /// </summary>
+    public void RestartGameScene()
+    {
+        CurrentState = GameState.Playing;
+        Time.timeScale = 1f;
+        SceneLoader.Instance.LoadWithLoading(SceneNames.GameScene);
+        Debug.Log("Game scene restart requested");
+        if (InputManager.Instance != null)
+            InputManager.Instance.EnablePlayerInput();
+    }
+
+    /// <summary>
+    /// РџРµСЂРµРІРѕРґРёС‚ РёРіСЂСѓ РІ СЃРѕСЃС‚РѕСЏРЅРёРµ РїРѕСЂР°Р¶РµРЅРёСЏ Рё РІРєР»СЋС‡Р°РµС‚ UI-РІРІРѕРґ.
+    /// </summary>
+    public void EnterLoseState()
+    {
+        if (CurrentState != GameState.Playing)
+            return;
+
+        CurrentState = GameState.Lost;
+        Time.timeScale = 0f;
+        if (InputManager.Instance != null)
+            InputManager.Instance.EnableUIInput();
+        Debug.Log("Game lost");
+    }
+
+    /// <summary>
+    /// РџРµСЂРµРІРѕРґРёС‚ РёРіСЂСѓ РІ СЃРѕСЃС‚РѕСЏРЅРёРµ РїРѕР±РµРґС‹ Рё РІРєР»СЋС‡Р°РµС‚ UI-РІРІРѕРґ.
+    /// </summary>
+    public void EnterWinState()
+    {
+        if (CurrentState != GameState.Playing)
+            return;
+
+        CurrentState = GameState.Won;
+        Time.timeScale = 0f;
+        if (InputManager.Instance != null)
+            InputManager.Instance.EnableUIInput();
+        Debug.Log("Game won");
     }
 }
