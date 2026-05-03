@@ -29,23 +29,14 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Speed multiplier when sprinting.")]
     [SerializeField] private float sprintMultiplier = 1.5f;
 
-    [Header("Crouch")]
-    [Tooltip("Множитель скорости при приседании.")]
-    [SerializeField] private float crouchMultiplier = 0.5f;
-    [Tooltip("Высота коллайдера при приседании.")]
-    [SerializeField] private float crouchHeight = 1.0f;
-    [Tooltip("Высота коллайдера в обычном состоянии.")]
-    [SerializeField] private float standHeight = 2.0f;
-    [Tooltip("Скорость перехода между высотами.")]
-    [SerializeField] private float crouchTransitionSpeed = 8f;
-
     private CharacterController characterController;
     private Vector3 verticalVelocity;
     private bool isGrounded;
 
-    // Состояние приседания
-    private bool isCrouching = false;
-
+    /// <summary>
+    /// Инициализирует ссылки на CharacterController, PlayerStats и камеру.
+    /// Вызывается один раз при создании объекта.
+    /// </summary>
     private void Awake()
     {
         characterController = GetComponent<CharacterController>();
@@ -57,6 +48,10 @@ public class PlayerController : MonoBehaviour
             cameraTransform = Camera.main.transform;
     }
 
+    /// <summary>
+    /// Главный игровой цикл контроллера.
+    /// Каждый кадр обрабатывает движение и прыжок, затем сбрасывает одноразовые флаги ввода в InputManager.
+    /// </summary>
     private void Update()
     {
         if (InputManager.Instance == null)
@@ -68,23 +63,13 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        HandleCrouchToggle();
         HandleMovement();
         HandleJump();
-        UpdateCrouchTransition();
 
+        // В КОНЦЕ кадра сбрасываем "одноразовые" флаги кнопок (нажат в этом кадре).
+        // Это важно для действий типа прыжка/атаки: они должны срабатывать один раз,
+        // пока игровой код не успел их прочитать, а затем флаг нужно обнулить.
         InputManager.Instance.ResetButtonFlags();
-    }
-
-    /// <summary>
-    /// Обработка переключения состояния приседания.
-    /// </summary>
-    private void HandleCrouchToggle()
-    {
-        if (InputManager.Instance.IsCrouchHeld())
-        {
-            isCrouching = !isCrouching;
-        }
     }
 
     /// <summary>
@@ -97,6 +82,9 @@ public class PlayerController : MonoBehaviour
         Vector2 moveInput = InputManager.Instance.MoveInput;
         Vector3 moveDirection = Vector3.zero;
 
+        // Movement relative to camera:
+        // W/S — move forward/back along camera forward,
+        // A/D — move left/right along camera right (strafe).
         if (moveInput.sqrMagnitude > 0.001f && cameraTransform != null)
         {
             Vector3 forward = cameraTransform.forward;
@@ -125,14 +113,9 @@ public class PlayerController : MonoBehaviour
             speed *= sprintMultiplier;
         }
 
-        // Замедление при приседании
-        if (isCrouching)
-        {
-            speed *= crouchMultiplier;
-        }
-
         Vector3 horizontalVelocity = moveDirection * speed;
 
+        // Ground check from CharacterController.
         isGrounded = characterController.isGrounded;
 
         if (isGrounded && verticalVelocity.y < 0f)
@@ -140,12 +123,17 @@ public class PlayerController : MonoBehaviour
             verticalVelocity.y = groundedGravity;
         }
 
+        // Apply gravity over time.
         verticalVelocity.y += gravity * Time.deltaTime;
 
+        // Final velocity combines horizontal movement and vertical velocity.
         Vector3 velocity = horizontalVelocity + verticalVelocity;
 
         characterController.Move(velocity * Time.deltaTime);
 
+        // Strafing-style rotation:
+        // visual model always faces camera forward on XZ plane,
+        // movement can be forward/back/strafe relative to camera.
         if (cameraTransform != null && visualRoot != null)
         {
             Vector3 cameraForward = cameraTransform.forward;
@@ -162,18 +150,6 @@ public class PlayerController : MonoBehaviour
                 );
             }
         }
-    }
-
-    /// <summary>
-    /// Плавное изменение высоты коллайдера при приседании.
-    /// </summary>
-    private void UpdateCrouchTransition()
-    {
-        if (characterController == null)
-            return;
-
-        float targetHeight = isCrouching ? crouchHeight : standHeight;
-        characterController.height = Mathf.Lerp(characterController.height, targetHeight, crouchTransitionSpeed * Time.deltaTime);
     }
 
     /// <summary>

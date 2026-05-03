@@ -52,15 +52,16 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Возврат в главное меню: переключает состояние, сбрасывает скорость времени, загружает сцену меню и включает UI‑ввод.
     /// </summary>
-    public void GoToMenu()
+    [SerializeField] public void GoToMenu()
     {
         CurrentState = GameState.Menu;
         Time.timeScale = 1f;
-        SceneLoader.Instance.Load(SceneNames.MainMenu);
-        Debug.Log("Go to Main Menu");
+        SceneLoader.Instance.LoadWithLoading(SceneNames.MainMenu);
+
         if (InputManager.Instance != null)
             InputManager.Instance.EnableUIInput();
     }
+
 
     /// <summary>
     /// Ставит игру на паузу из состояния Playing:

@@ -38,23 +38,13 @@ public class SceneLoader : MonoBehaviour
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
-    /// <summary>
-    /// Асинхронно загружает сцену по имени.
-    /// Подходит для простых переходов, когда не нужен прогресс загрузки.
-    /// </summary>
-    public void Load(string sceneName)
-    {
-        Debug.Log($"Loading scene: {sceneName}");
-        SceneManager.LoadScene(sceneName);
-    }
 
     /// <summary>
-    /// Запускает асинхронную загрузку сцены.
-    /// Можно расширить для показа экрана загрузки/прогресса.
+    /// Загружает GameScene2 через сцену Loading.
     /// </summary>
-    public void LoadAsync(string sceneName)
+    public void LoadGameScene2WithLoading()
     {
-        StartCoroutine(LoadSceneAsyncCoroutine(sceneName));
+        LoadWithLoading(SceneNames.GameScene2);
     }
 
     /// <summary>
@@ -79,6 +69,12 @@ public class SceneLoader : MonoBehaviour
         _pendingPreloadRoutine = preloadRoutine;
         _waitForLoadingScene = true;
         Load(SceneNames.Loading);
+    }
+
+    private void Load(string sceneName)
+    {
+        Debug.Log($"Loading scene: {sceneName}");
+        SceneManager.LoadScene(sceneName);
     }
 
     private IEnumerator LoadSceneAsyncCoroutine(string sceneName)
