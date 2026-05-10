@@ -9,23 +9,17 @@ public class PlayerProgression : MonoBehaviour
 {
     [Header("Связи")]
     [Tooltip("Ссылка на PlayerStats для возможного усиления характеристик при уровне.")]
-    [SerializeField] private PlayerStats playerStats;
+    public PlayerStats playerStats;
 
     [Header("Уровень")]
+    [SerializeField]
     [Tooltip("Текущий уровень игрока.")]
-    [SerializeField] private int currentLevel = 1;
+    private int currentLevel = 1;
 
     [Header("Опыт")]
+    [SerializeField]
     [Tooltip("Текущее количество опыта.")]
-    [SerializeField] private float currentExperience = 0f;
-
-    [Header("Прибавка к статам при повышении уровня")]
-    [Tooltip("Увеличение максимального здоровья при повышении уровня")]
-    [SerializeField] private float healthBonusPerLevel = 10f;
-
-    [Tooltip("Увеличение максимальной маны при повышении уровня")]
-    [SerializeField] private float manaBonusPerLevel = 5f;
-
+    private float currentExperience = 0f;
 
     /// <summary>
     /// Текущий уровень игрока (только для чтения).
@@ -39,11 +33,17 @@ public class PlayerProgression : MonoBehaviour
     /// </summary>
     public float CurrentExperience => currentExperience;
 
+    /// <summary>
+    /// Сколько опыта нужно до следующего уровня при текущем уровне.
+    /// Это единый источник истины для UI и других систем.
+    /// </summary>
+    public float RequiredExperienceForNextLevel => GetRequiredExperienceForNextLevel();
+
     [Tooltip("Базовое количество опыта для перехода с 1 на 2 уровень.")]
-    [SerializeField] private float baseExperienceToNextLevel = 100f;
+    public float baseExperienceToNextLevel = 100f;
 
     [Tooltip("Множитель роста требуемого опыта на каждый следующий уровень.")]
-    [SerializeField] private float experienceGrowthFactor = 1.5f;
+    public float experienceGrowthFactor = 1.5f;
 
     // Событие, вызываемое при повышении уровня
     public event Action<int> OnLevelUp;
@@ -54,10 +54,9 @@ public class PlayerProgression : MonoBehaviour
     private void Awake()
     {
         if (playerStats == null)
-        {
-            Debug.LogWarning("PlayerStats не найден на объекте. Убедитесь, что компонент добавлен.", this);
-        }
+            playerStats = GetComponent<PlayerStats>();
 
+        // Инициализируем подписчиков начальными значениями
         float required = GetRequiredExperienceForNextLevel();
         OnExperienceChanged?.Invoke(currentExperience, required);
     }
@@ -121,5 +120,14 @@ public class PlayerProgression : MonoBehaviour
 
         // Уведомляем подписчиков
         OnLevelUp?.Invoke(currentLevel);
+
+        // Пример: усиливаем характеристики игрока при каждом уровне
+        if (playerStats != null)
+        {
+            // Все изменения здоровья/маны и вызовы событий
+            // делаем через PlayerStats, чтобы события вызывались
+            // только изнутри класса-источника.
+            playerStats.ApplyLevelUpBonuses(10f, 5f);
+        }
     }
 }

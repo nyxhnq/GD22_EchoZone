@@ -1,9 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-//NRE - Null Reference Exception
-//Ошибка вызова объекта, который не был создан (ссылка на null)
-
+/// <summary>
+/// Управляет pause-экраном: показывает/скрывает панель и обрабатывает кнопки/ввод паузы.
+/// </summary>
 public class PauseController : MonoBehaviour
 {
     [SerializeField] private GameObject pausePanel;
@@ -12,66 +12,44 @@ public class PauseController : MonoBehaviour
 
     private void OnEnable()
     {
-        // Подписываемся на события EventBus при включении объекта
         if (EventBus.Instance != null)
         {
             EventBus.Instance.OnGamePaused += ShowPausePanel;
             EventBus.Instance.OnGameResumed += HidePausePanel;
-            //Подписка : +=
+        }
+
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnPausePressed += HandlePausePressed;
+            InputManager.Instance.OnCancelPressed += HandleCancelPressed;
         }
     }
 
     private void OnDisable()
     {
-        // Отписываемся от событий при выключении объекта (ВАЖНО для предотвращения утечек памяти!)
+        // Важно отписываться в OnDisable, чтобы не копить дубли подписок при повторных активациях.
         if (EventBus.Instance != null)
         {
             EventBus.Instance.OnGamePaused -= ShowPausePanel;
             EventBus.Instance.OnGameResumed -= HidePausePanel;
-            //Отписка : -=
+        }
+
+        if (InputManager.Instance != null)
+        {
+            InputManager.Instance.OnPausePressed -= HandlePausePressed;
+            InputManager.Instance.OnCancelPressed -= HandleCancelPressed;
         }
     }
 
     private void Start()
     {
-        // Подключаем кнопки (Start вызывается после всех Awake, поэтому менеджеры уже созданы)
         if (buttonResume != null)
             buttonResume.onClick.AddListener(OnResumeClicked);
+
         if (buttonMainMenu != null)
             buttonMainMenu.onClick.AddListener(OnMainMenuClicked);
     }
 
-    private void Update()
-    {
-        // Проверяем нажатие Esc
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-            TogglePause();
-        }
-    }
-
-    private void TogglePause()
-    {
-        // Проверяем, что менеджеры созданы
-        if (GameManager.Instance == null)
-        {
-            Debug.LogWarning("GameManager instance is null. Cannot toggle pause. ");
-            return;
-        }
-
-        // Просто вызываем методы GameManager
-        // EventBus автоматически покажет/скроет панель
-        if (GameManager.Instance.CurrentState == GameState.Playing)
-        {
-            GameManager.Instance.Pause(); // вызовет EventBus.Instance.RaiseGamePaused()
-        }
-        else if (GameManager.Instance.CurrentState == GameState.Paused)
-        {
-            GameManager.Instance.Resume(); // вызовет EventBus.Instance.RaiseGameResumed()
-        }
-    }
-
-    // Эти методы вызываются автоматически через EventBus
     private void ShowPausePanel()
     {
         if (pausePanel != null)
@@ -84,16 +62,27 @@ public class PauseController : MonoBehaviour
             pausePanel.SetActive(false);
     }
 
-    // Обработчики кнопок
     private void OnResumeClicked()
     {
         if (GameManager.Instance != null)
-            GameManager.Instance.Resume(); // вызовет EventBus, который скроет панель
+            GameManager.Instance.Resume();
     }
 
     private void OnMainMenuClicked()
     {
         if (GameManager.Instance != null)
             GameManager.Instance.GoToMenu();
+    }
+
+    private void HandlePausePressed()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Playing)
+            GameManager.Instance.Pause();
+    }
+
+    private void HandleCancelPressed()
+    {
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameState.Paused)
+            GameManager.Instance.Resume();
     }
 }

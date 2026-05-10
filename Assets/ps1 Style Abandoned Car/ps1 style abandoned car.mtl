@@ -1,0 +1,22 @@
+# Blender 4.4.0 MTL File: 'ps1 style abandoned car.blend'
+# www.blender.org
+
+newmtl Material.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 2
+map_Kd C:/texture_0.png
+
+newmtl Material.003
+Ns 1000.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.026912 0.030802 0.098435
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 0.068349
+illum 6
