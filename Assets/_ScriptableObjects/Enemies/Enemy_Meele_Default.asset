@@ -16,8 +16,8 @@ MonoBehaviour:
   enemyType: 0
   maxHealth: 50
   moveSpeed: 3
-  damage: 4
+  damage: 5
   attackRange: 2
-  detectionRange: 5
+  detectionRange: 3
   experienceReward: 5
   prefab: {fileID: 2127713680867060050, guid: 82678222f3ded0d428b687d239a24536, type: 3}

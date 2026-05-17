@@ -15,7 +15,7 @@ MonoBehaviour:
   enemyName: Enemy_Special
   enemyType: 2
   maxHealth: 50
-  moveSpeed: 3
+  moveSpeed: 5
   damage: 10
   attackRange: 2
   detectionRange: 10
