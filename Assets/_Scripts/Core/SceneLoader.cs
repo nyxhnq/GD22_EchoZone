@@ -48,6 +48,20 @@ public class SceneLoader : MonoBehaviour
     }
 
     /// <summary>
+    /// ”добный вызов: если текуща€ сцена Ч `GameScene`, запускает переход в `GameScene2` через `Loading`.
+    /// ≈сли текуща€ сцена друга€ Ч предупреждает и всЄ равно инициирует переход.
+    /// </summary>
+    public void SwitchGameSceneToGameScene2()
+    {
+        if (SceneManager.GetActiveScene().name != SceneNames.GameScene)
+        {
+            Debug.LogWarning("SceneLoader: текуща€ сцена не 'GameScene'. »нициализирую переход в 'GameScene2' через Loading.");
+        }
+
+        LoadGameScene2WithLoading();
+    }
+
+    /// <summary>
     /// ѕереход в целевую сцену через Loading:
     /// сначала открываем Loading, затем уже из неЄ асинхронно грузим целевую сцену.
     /// </summary>
