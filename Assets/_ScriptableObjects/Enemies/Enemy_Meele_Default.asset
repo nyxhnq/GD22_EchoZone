@@ -18,6 +18,6 @@ MonoBehaviour:
   moveSpeed: 3
   damage: 5
   attackRange: 2
-  detectionRange: 3
+  detectionRange: 7
   experienceReward: 5
   prefab: {fileID: 2127713680867060050, guid: 82678222f3ded0d428b687d239a24536, type: 3}

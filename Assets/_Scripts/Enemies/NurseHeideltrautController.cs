@@ -1,61 +1,156 @@
 using UnityEngine;
 
+/// <summary>
+/// Логика анимаций и преследования для NurseHeideltraut:
+/// - когда персонаж неподвижен и игрок далеко -> Nurse_Punch_01
+/// - когда игрок близко (<= nearDistance) и игрок стоит -> Nurse_Idle_01
+/// - когда игрок впритык (<= closeDistance) -> Nurse_Walk_01 и преследование игрока до ухода за chaseStopDistance
+/// Скрипт не использует NavMesh — движение реализовано через MoveTowards.
+/// Назначьте Animator и, опционально, Transform игрока (если не указан — ищем по тегу "Player").
+/// </summary>
 public class NurseHeideltrautController : MonoBehaviour
 {
     [Header("References")]
     public Animator animator;
+    public Transform player; // если не задан — будет найден по тегу "Player"
 
-    [Header("Animation")]
-    [Tooltip("Имя состояния в Animator, точно как в Animator (например: Nurse_Punch_01)")]
-    public string stateName = "Nurse_Punch_01";
-    [Tooltip("Имя слоя в Animator (по умолчанию Base Layer)")]
+    [Header("Distances (метры)")]
+    [Tooltip("<= closeDistance — впритык: запуск преследования и Nurse_Walk_01")]
+    public float closeDistance = 1.0f;
+    [Tooltip("<= nearDistance — близко: Nurse_Idle_01, если игрок стоит")]
+    public float nearDistance = 3.0f;
+    [Tooltip("Если игрок удалится дальше, преследование прекратится")]
+    public float chaseStopDistance = 4.0f;
+
+    [Header("Chase")]
+    public float chaseSpeed = 2.0f;
+
+    [Header("Movement detection")]
+    [Tooltip("Порог смещения (м) для признания как движение")]
+    public float movementThreshold = 0.02f;
+    [Tooltip("Интервал проверки позиций (с)")]
+    public float positionCheckInterval = 0.12f;
+
+    [Header("Animator state names")]
+    [Tooltip("Имя состояния удара (пример: Nurse_Punch_01)")]
+    public string punchStateName = "Nurse_Punch_01";
+    [Tooltip("Имя состояния отдыха (пример: Nurse_Idle_01)")]
+    public string idleStateName = "Nurse_Idle_01";
+    [Tooltip("Имя состояния ходьбы (пример: Nurse_Walk_01)")]
+    public string walkStateName = "Nurse_Walk_01";
+    [Tooltip("Имя слоя в Animator (обычно 'Base Layer')")]
     public string layerName = "Base Layer";
 
-    [Header("Movement detection (м/с)")]
-    [Tooltip("Порог скорости ниже которого считается, что персонаж стоит")]
-    public float movementThreshold = 0.01f;
-
-    private Vector3 _lastPosition;
+    private Vector3 _lastNursePos;
+    private Vector3 _lastPlayerPos;
+    private float _checkTimer;
+    private float _sqrMoveThreshold;
     private int _layerIndex;
-    private int _stateHash;
-    private float _sqrThreshold;
+
+    private bool _isChasing;
 
     private void Awake()
     {
         if (animator == null) animator = GetComponent<Animator>();
-        _lastPosition = transform.position;
+        if (player == null)
+        {
+            var go = GameObject.FindWithTag("Player");
+            if (go != null) player = go.transform;
+        }
+
+        _lastNursePos = transform.position;
+        _lastPlayerPos = player != null ? player.position : Vector3.zero;
+        _checkTimer = 0f;
+        _sqrMoveThreshold = movementThreshold * movementThreshold;
         _layerIndex = animator != null ? Mathf.Max(0, animator.GetLayerIndex(layerName)) : 0;
-        _stateHash = Animator.StringToHash(stateName);
-        _sqrThreshold = movementThreshold * movementThreshold;
     }
 
     private void Update()
     {
-        if (animator == null) return;
+        if (animator == null || player == null) return;
 
-        float dt = Time.deltaTime;
-        if (dt <= 0f)
+        // Обновляем детекторы движения периодически
+        _checkTimer += Time.deltaTime;
+        bool nurseIsMoving;
+        bool playerIsMoving;
+
+        if (_checkTimer >= positionCheckInterval)
         {
-            _lastPosition = transform.position;
+            nurseIsMoving = (transform.position - _lastNursePos).sqrMagnitude > _sqrMoveThreshold;
+            playerIsMoving = (player.position - _lastPlayerPos).sqrMagnitude > _sqrMoveThreshold;
+
+            _lastNursePos = transform.position;
+            _lastPlayerPos = player.position;
+            _checkTimer = 0f;
+        }
+        else
+        {
+            // между интервалами берём текущую оценку для отзывчивости
+            nurseIsMoving = (transform.position - _lastNursePos).sqrMagnitude > _sqrMoveThreshold;
+            playerIsMoving = (player.position - _lastPlayerPos).sqrMagnitude > _sqrMoveThreshold;
+        }
+
+        float dist = Vector3.Distance(player.position, transform.position);
+
+        // Управление началом/окончанием преследования
+        if (!_isChasing && dist <= closeDistance)
+        {
+            _isChasing = true;
+        }
+        else if (_isChasing && dist > chaseStopDistance)
+        {
+            _isChasing = false;
+        }
+
+        if (_isChasing)
+        {
+            // Преследование: движение к игроку и проигрывание walk состояния
+            Vector3 target = new Vector3(player.position.x, transform.position.y, player.position.z);
+            transform.position = Vector3.MoveTowards(transform.position, target, chaseSpeed * Time.deltaTime);
+
+            PlayStateIfNotCurrent(walkStateName);
+
+            // Обновляем last position, чтобы не считать персонажа неподвижным
+            _lastNursePos = transform.position;
+            _lastPlayerPos = player.position;
+            _checkTimer = 0f;
             return;
         }
 
-        Vector3 delta = transform.position - _lastPosition;
-        float speedSqr = delta.sqrMagnitude / (dt * dt);
-
-        bool isStanding = speedSqr <= _sqrThreshold;
-
-        if (isStanding)
+        // Если не преследуем — выбираем состояние по правилам:
+        // 1) Если игрок впритык (<= closeDistance) — Walk (без преследования)
+        // 2) Иначе если игрок в пределах nearDistance и ИГРОК неподвижен — Idle
+        // 3) Иначе если Nurse неподвижна — Punch
+        if (dist <= closeDistance)
         {
-            // Если текущее состояние не то, которое нужно — принудительно поставить его.
-            AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(_layerIndex);
-            if (stateInfo.shortNameHash != _stateHash)
-            {
-                // Play с указанием слоя и сбросом времени воспроизведения на 0
-                animator.Play(_stateHash, _layerIndex, 0f);
-            }
+            PlayStateIfNotCurrent(walkStateName);
+            return;
         }
 
-        _lastPosition = transform.position;
+        if (dist <= nearDistance && !playerIsMoving)
+        {
+            PlayStateIfNotCurrent(idleStateName);
+            return;
+        }
+
+        if (!nurseIsMoving)
+        {
+            PlayStateIfNotCurrent(punchStateName);
+            return;
+        }
+
+        // В остальных случаях (nurse движется) — не вмешиваемся, пусть другие системы управляют анимацией.
+    }
+
+    private void PlayStateIfNotCurrent(string stateName)
+    {
+        if (animator == null) return;
+        string fullName = $"{layerName}.{stateName}";
+        AnimatorStateInfo info = animator.GetCurrentAnimatorStateInfo(_layerIndex);
+        if (!info.IsName(fullName))
+        {
+            // Переключаем мгновенно (нормализуем время на 0)
+            animator.Play(fullName, _layerIndex, 0f);
+        }
     }
 }
