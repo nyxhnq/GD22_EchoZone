@@ -43,13 +43,13 @@ MonoBehaviour:
   active: 1
   color:
     m_OverrideState: 1
-    m_Value: {r: 0.44313726, g: 0.09411765, b: 0.12941177, a: 1}
+    m_Value: {r: 0, g: 0, b: 0, a: 1}
   center:
     m_OverrideState: 1
     m_Value: {x: 0.5, y: 0.5}
   intensity:
     m_OverrideState: 1
-    m_Value: 0.463
+    m_Value: 0.388
   smoothness:
     m_OverrideState: 1
     m_Value: 0.212

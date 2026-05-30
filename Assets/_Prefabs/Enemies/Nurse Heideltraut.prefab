@@ -22,19 +22,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 46.773
+      value: 222.4565
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.0588624
+      value: 1.0351181
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -260.471
+      value: -192.71645
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.97452575
+      value: 0.99532676
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalRotation.x
@@ -42,7 +42,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0.22427578
+      value: -0.096564725
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalRotation.z
@@ -54,7 +54,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 25.921
+      value: -11.083
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 97798826107a8a6408735919647a04cd, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
@@ -115,7 +115,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 05fcfac660d899f4fae54910df8abed8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 9100000, guid: 9966a6713f4573e4a91b991f8dba404e, type: 2}
+  animator: {fileID: -120405599057267305}
   stateName: NurseHeideltraut_01|Nurse_Punch_01
   layerName: Base Layer
-  movementThreshold: 0.02
+  movementThreshold: 2
